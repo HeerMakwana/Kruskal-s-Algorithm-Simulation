@@ -1,0 +1,1903 @@
+<!-- test edit -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Power Grid Optimization</title>
+    <style>
+        :root {
+            --primary-dark: #121212;
+            --secondary-dark: #1e1e1e;
+            --accent-blue: #0097e6;
+            --light-blue: #48dbfb;
+            --text-light: #f5f6fa;
+            --dark-grey: #2f3542;
+            --mid-grey: #57606f;
+            --highlight: #3742fa;
+            --success: #2ed573;
+            --warning: #ffa502;
+            --danger: #ff6348;
+            --glow: 0 0 10px rgba(72, 219, 251, 0.7);
+            --purple: #9b59b6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--primary-dark);
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--secondary-dark);
+            padding: 20px;
+            border-bottom: 2px solid var(--accent-blue);
+            margin-bottom: 30px;
+            box-shadow: 0 2px 20px rgba(0, 151, 230, 0.3);
+        }
+        
+        h1, h2, h3 {
+            color: var(--light-blue);
+            letter-spacing: 1px;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 0;
+            font-size: 2.2rem;
+            text-shadow: var(--glow);
+        }
+        
+        .sub-title {
+            text-align: center;
+            color: var(--mid-grey);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--dark-grey);
+            color: var(--text-light);
+            min-width: 120px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        
+        button:hover::before {
+            left: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(0, 0, 0, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button.primary {
+            background-color: var(--accent-blue);
+        }
+        
+        button.success {
+            background-color: var(--success);
+        }
+        
+        button.warning {
+            background-color: var(--warning);
+            color: var(--dark-grey);
+        }
+        
+        button.danger {
+            background-color: var(--danger);
+        }
+        
+        button.purple {
+            background-color: var(--purple);
+        }
+        
+        button:disabled {
+            background-color: var(--mid-grey);
+            cursor: not-allowed;
+            opacity: 0.7;
+            transform: none;
+        }
+        
+        button:disabled::before {
+            display: none;
+        }
+        
+        .canvas-container {
+            position: relative;
+            margin: 30px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: var(--secondary-dark);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--dark-grey);
+        }
+        
+        canvas {
+            display: block;
+        }
+        
+        .status-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--secondary-dark);
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-blue);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .status-icon {
+            font-size: 24px;
+            color: var(--accent-blue);
+        }
+        
+        .status-text {
+            font-weight: bold;
+            color: var(--text-light);
+        }
+        
+        .total-cost {
+            padding: 5px 15px;
+            background-color: var(--accent-blue);
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .panel {
+            background-color: var(--secondary-dark);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .edge-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+            background-color: var(--dark-grey);
+            margin-top: 10px;
+        }
+        
+        .edge-list-header {
+            font-weight: bold;
+            display: flex;
+            background-color: var(--mid-grey);
+            padding: 10px 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .edge-list-header span, .edge-item span {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .edge-item {
+            display: flex;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--mid-grey);
+            transition: background-color 0.3s ease;
+        }
+        
+        .edge-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .edge-item.selected {
+            background-color: rgba(46, 213, 115, 0.2);
+            border-left: 3px solid var(--success);
+        }
+        
+        .edge-item.rejected {
+            background-color: rgba(255, 99, 72, 0.2);
+            border-left: 3px solid var(--danger);
+        }
+        
+        .edge-item.pending {
+            background-color: rgba(255, 165, 2, 0.2);
+            border-left: 3px solid var(--warning);
+        }
+        
+        .edge-item.current {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(72, 219, 251, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(72, 219, 251, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(72, 219, 251, 0); }
+        }
+        
+        .step-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--secondary-dark);
+            border-radius: 8px;
+            border-left: 4px solid var(--light-blue);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .instruction-panel {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: var(--secondary-dark);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .instruction-panel h3 {
+            margin-top: 0;
+            color: var(--light-blue);
+            border-bottom: 1px solid var(--mid-grey);
+            padding-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            margin: 20px 0;
+            border-bottom: 1px solid var(--mid-grey);
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            background-color: var(--dark-grey);
+            color: var(--text-light);
+            border: 1px solid var(--mid-grey);
+            border-bottom: none;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .tab:hover {
+            background-color: var(--mid-grey);
+        }
+        
+        .tab.active {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+            position: relative;
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: var(--accent-blue);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: var(--secondary-dark);
+            border-radius: 0 0 8px 8px;
+            border: 1px solid var(--mid-grey);
+            border-top: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--mid-grey);
+            border-radius: 5px;
+            background-color: var(--dark-grey);
+            color: var(--text-light);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 2px rgba(0, 151, 230, 0.3);
+            outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .node-list, .edge-input-list {
+            margin-top: 15px;
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: var(--dark-grey);
+        }
+        
+        .node-item, .edge-input-item {
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--secondary-dark);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        
+        .node-item:hover, .edge-input-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .node-item button, .edge-input-item button {
+            padding: 5px 10px;
+            background-color: var(--danger);
+            min-width: auto;
+        }
+        
+        .input-mode-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .input-mode {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: var(--dark-grey);
+            color: var(--text-light);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .input-mode:hover {
+            background-color: var(--mid-grey);
+        }
+        
+        .input-mode.active {
+            background-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 151, 230, 0.5);
+        }
+        
+        .instruction-box {
+            padding: 15px;
+            background-color: rgba(0, 151, 230, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .cost-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background-color: var(--accent-blue);
+        }
+        
+        .loading {
+            position: relative;
+        }
+        
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .loading::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-blue);
+            animation: spin 1s ease-in-out infinite;
+            z-index: 101;
+        }
+        
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 10px;
+            border-radius: 3px;
+        }
+        
+        .legend-color.connected {
+            background-color: var(--success);
+            box-shadow: 0 0 5px var(--success);
+        }
+        
+        .legend-color.rejected {
+            background-color: var(--danger);
+        }
+        
+        .legend-color.pending {
+            background-color: var(--warning);
+        }
+        
+        .stats-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-card {
+            background-color: var(--secondary-dark);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 150px;
+            border-left: 3px solid var(--accent-blue);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-title {
+            color: var(--mid-grey);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-light);
+        }
+
+        /* Animation speed controls */
+        .speed-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            gap: 15px;
+            background-color: var(--secondary-dark);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .speed-control-label {
+            font-weight: bold;
+            color: var(--light-blue);
+        }
+
+        .speed-slider {
+            flex: 1;
+            max-width: 300px;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 8px;
+            background: var(--dark-grey);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 151, 230, 0.5);
+            transition: all 0.2s ease;
+        }
+
+        .speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(0, 151, 230, 0.7);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            box-shadow: 0 0 5px rgba(0, 151, 230, 0.5);
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .speed-slider::-moz-range-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 10px rgba(0, 151, 230, 0.7);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            min-width: auto;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PowerConnect: City Grid Optimization</h1>
+        <div class="sub-title">Using Kruskal's Algorithm to design efficient power distribution networks</div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="simulation">Power Grid Simulation</div>
+            <div class="tab" data-tab="custom-input">Custom City Network</div>
+        </div>
+        
+        <div id="simulation-tab" class="tab-content active">
+            <div class="instruction-box">
+                <p>This simulation demonstrates how to optimize power connections between cities using Kruskal's algorithm, which finds the most efficient way to connect all cities while minimizing total cable length/cost.</p>
+            </div>
+            
+            <div class="controls">
+                <button id="generateBtn" class="primary">Generate Random Cities</button>
+                <button id="startBtn" class="success" disabled>Run Algorithm</button>
+                <button id="nextBtn" class="purple" disabled>Next Step</button>
+                <button id="resetBtn" class="warning">Reset</button>
+            </div>
+            
+            <!-- Animation speed controls -->
+            <div class="speed-controls">
+                <span class="speed-control-label">Animation Speed:</span>
+                <input type="range" min="1" max="10" value="5" class="speed-slider" id="speedSlider">
+                <div class="control-buttons">
+                    <button id="pauseBtn" class="control-btn" disabled>Pause</button>
+                    <button id="resumeBtn" class="control-btn" disabled>Resume</button>
+                </div>
+            </div>
+            
+            <div class="status-panel">
+                <div class="status-left">
+                    <div class="status-icon">⚡</div>
+                    <div class="status-text" id="statusText">Generate cities to begin</div>
+                </div>
+                <div class="total-cost" id="totalCost">Total Cost: 0 MW</div>
+            </div>
+            
+            <div class="panel">
+                <div class="canvas-container">
+                    <canvas id="graphCanvas" width="800" height="400"></canvas>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color connected"></div>
+                        <span>Connected Power Lines</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color rejected"></div>
+                        <span>Rejected Lines</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color pending" style="background-color: #ffa502;"></div>
+                        <span>Pending Connections</span>
+                    </div>
+                </div>
+                
+                <div class="step-info" id="stepInfo">
+                    Kruskal's algorithm finds the most efficient power grid by sorting all possible connections by cost and adding them if they don't create energy feedback loops.
+                </div>
+            </div>
+            
+            <div class="panel" style="margin-top: 20px;">
+                <h3>Power Line Connections</h3>
+                <div class="edge-list">
+                    <div class="edge-list-header">
+                        <span>Cities</span>
+                        <span>Power Cost</span>
+                        <span>Status</span>
+                    </div>
+                    <div id="edgeListContainer"></div>
+                </div>
+            </div>
+            
+            <div class="stats-panel">
+                <div class="stat-card">
+                    <div class="stat-title">Cities</div>
+                    <div class="stat-value" id="cityCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Possible Connections</div>
+                    <div class="stat-value" id="connectionCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Connected Lines</div>
+                    <div class="stat-value" id="connectedCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-title">Rejected Lines</div>
+                    <div class="stat-value" id="rejectedCount">0</div>
+                </div>
+            </div>
+            
+            <div class="instruction-panel">
+                <h3>About Power Grid Optimization</h3>
+                <p>In this simulation, each node represents a city that needs to be connected to the power grid. The edges represent potential power line connections, with the weight indicating the cost/power requirement to establish that connection.</p>
+                <p>The goal is to connect all cities to the power grid with the minimum total power requirement. This is a classic application of the Minimum Spanning Tree problem, which Kruskal's algorithm solves efficiently.</p>
+                <ol>
+                    <li>The algorithm starts by sorting all possible connections by their power cost.</li>
+                    <li>It then adds connections one by one, starting with the lowest cost, as long as they don't create loops in the network.</li>
+                    <li>The process continues until all cities are connected with the minimum possible total power requirement.</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div id="custom-input-tab" class="tab-content">
+            <h2>Create Custom City Network</h2>
+            
+            <div class="instruction-box">
+                <p>Design your own city network by adding cities and power connections. You can then run the optimization algorithm on your custom network.</p>
+                <p>Interact with the canvas below to add cities and connections visually, or use the forms to add them manually.</p>
+            </div>
+            
+            <div class="input-mode-container">
+                <div class="input-mode active" data-mode="node">Add City</div>
+                <div class="input-mode" data-mode="edge">Add Connection</div>
+                <div class="input-mode" data-mode="move">Move City</div>
+                <div class="input-mode" data-mode="delete">Delete</div>
+            </div>
+            
+            <div class="canvas-container">
+                <canvas id="inputCanvas" width="800" height="400"></canvas>
+            </div>
+            
+            <div class="status-panel">
+                <div class="status-text" id="inputStatusText">Click on canvas to add cities, then create connections between them</div>
+            </div>
+            
+            <div class="controls">
+                <button id="addNodeBtn" class="primary">Add City</button>
+                <button id="addEdgeBtn" class="purple">Add Connection</button>
+                <button id="clearCustomBtn" class="warning">Clear All</button>
+                <button id="useCustomGraphBtn" class="success">Use This Network</button>
+            </div>
+            
+            <div style="display: flex; margin-top: 20px; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="panel">
+                        <h3>Cities</h3>
+                        <div class="form-group">
+                            <label for="nodeLabel">City Name:</label>
+                            <input type="text" id="nodeLabel" placeholder="e.g., Boston, New York, etc.">
+                        </div>
+                        <div class="node-list" id="nodeListContainer">
+                            <!-- Node items will be added here -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="flex: 1; min-width: 300px;">
+                    <div class="panel">
+                        <h3>Power Connections</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="edgeSource">Source City:</label>
+                                <select id="edgeSource">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="edgeTarget">Target City:</label>
+                                <select id="edgeTarget">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="edgeWeight">Power Requirement (MW):</label>
+                            <input type="number" id="edgeWeight" min="1" value="5">
+                        </div>
+                        <div class="edge-input-list" id="edgeInputListContainer">
+                            <!-- Edge items will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Disjoint Set data structure for Kruskal's algorithm
+        class DisjointSet {
+            constructor(n) {
+                this.parent = Array(n).fill().map((_, i) => i);
+                this.rank = Array(n).fill(0);
+            }
+            
+            find(x) {
+                if (this.parent[x] !== x) {
+                    this.parent[x] = this.find(this.parent[x]);
+                }
+                return this.parent[x];
+            }
+            
+            union(x, y) {
+                const rootX = this.find(x);
+                const rootY = this.find(y);
+                
+                if (rootX === rootY) return false;
+                
+                if (this.rank[rootX] < this.rank[rootY]) {
+                    this.parent[rootX] = rootY;
+                } else if (this.rank[rootX] > this.rank[rootY]) {
+                    this.parent[rootY] = rootX;
+                } else {
+                    this.parent[rootY] = rootX;
+                    this.rank[rootX]++;
+                }
+                
+                return true;
+            }
+        }
+        
+        // Main PowerGrid class for handling the algorithm
+        class PowerGrid {
+            constructor() {
+                this.nodes = [];
+                this.edges = [];
+                this.mstEdges = [];
+                this.rejectedEdges = [];
+                this.currentEdgeIndex = -1;
+                this.cityNames = [
+                    "New York", "Chicago", "Los Angeles", "Boston", "Philadelphia", 
+                    "Seattle", "Dallas", "Miami", "Denver", "Atlanta", "Detroit",
+                    "Phoenix", "San Francisco", "Portland", "Austin", "San Diego",
+                    "New Orleans", "Memphis", "Salt Lake City", "Nashville"
+                ];
+                
+                // Animation properties
+                this.animationSpeed = 5; // Default speed (1-10)
+                this.animationTimer = null;
+                this.isAnimating = false;
+                this.isPaused = false;
+            }
+            
+            // Generate a random city network
+            generateRandom(nodeCount = 7, edgeDensity = 0.6) {
+                this.clear();
+                
+                // Get canvas element for dimensions
+                const canvas = document.getElementById('graphCanvas');
+                
+                // Shuffle city names
+                const shuffledCities = [...this.cityNames].sort(() => Math.random() - 0.5);
+                
+                // Create nodes with random positions in a circle
+                                for (let i = 0; i < nodeCount; i++) {
+                                    const radius = Math.min(canvas.width, canvas.height) * 0.35;
+                                    const angle = (i * 2 * Math.PI) / nodeCount;
+                                    const x = canvas.width / 2 + radius * Math.cos(angle);
+                                    const y = canvas.height / 2 + radius * Math.sin(angle);
+                                    const cityName = i < shuffledCities.length ? shuffledCities[i] : `City ${i+1}`;
+                                    this.nodes.push({ id: i, x, y, label: cityName });
+                                }
+                                
+                                // Create edges with random weights
+                                for (let i = 0; i < nodeCount; i++) {
+                                    for (let j = i + 1; j < nodeCount; j++) {
+                                        if (Math.random() < edgeDensity) {
+                                            // Calculate distance between cities for more realistic weights
+                                            const dx = this.nodes[i].x - this.nodes[j].x;
+                                            const dy = this.nodes[i].y - this.nodes[j].y;
+                                            const distance = Math.sqrt(dx*dx + dy*dy);
+                                            
+                                            // Weight is proportional to distance
+                                            const weight = Math.round(distance / 20 + Math.random() * 10);
+                                            this.edges.push({ u: i, v: j, weight });
+                                        }
+                                    }
+                                }
+                
+                                // Sort edges by weight (essential for Kruskal's algorithm)
+                                this.edges.sort((a, b) => a.weight - b.weight);
+                                
+                                // Draw the network and update UI
+                                this.draw();
+                                document.getElementById('statusText').textContent = 'Ready to start algorithm';
+                                this.updateButtonStates();
+                            }
+                
+                            // Clear the current graph
+                            clear() {
+                                this.stopAnimation();
+                                this.nodes = [];
+                                this.edges = [];
+                                this.mstEdges = [];
+                                this.rejectedEdges = [];
+                                this.currentEdgeIndex = -1;
+                                this.isPaused = false;
+                                this.draw();
+                                this.updateButtonStates();
+                            }
+                
+                            // Perform one step of Kruskal's algorithm
+                            stepKruskal() {
+                                if (this.currentEdgeIndex >= this.edges.length - 1) {
+                                    document.getElementById('statusText').textContent = 'Algorithm completed!';
+                                    this.updateButtonStates();
+                                    this.stopAnimation();
+                                    return false; // Return false to indicate algorithm is complete
+                                }
+                
+                                this.currentEdgeIndex++;
+                                const edge = this.edges[this.currentEdgeIndex];
+                                
+                                if (edge && this.nodes[edge.u] && this.nodes[edge.v]) {
+                                    const fromNode = this.nodes[edge.u];
+                                    const toNode = this.nodes[edge.v];
+                                    document.getElementById('statusText').textContent = 
+                                        `Processing connection between ${fromNode.label} and ${toNode.label} (${edge.weight} MW)`;
+                                }
+                
+                                const ds = new DisjointSet(this.nodes.length);
+                
+                                // Initialize with current MST edges
+                                for (const e of this.mstEdges) {
+                                    ds.union(e.u, e.v);
+                                }
+                
+                                // Process current edge
+                                if (ds.union(edge.u, edge.v)) {
+                                    this.mstEdges.push(edge);
+                                } else {
+                                    this.rejectedEdges.push(edge);
+                                }
+                
+                                this.draw();
+                                this.updateButtonStates();
+                                
+                                // Return true to indicate algorithm can continue
+                                return this.currentEdgeIndex < this.edges.length - 1;
+                            }
+                
+                            // Run the full algorithm with animation
+                            runKruskal() {
+                                // Clear previous animation if running
+                                this.stopAnimation();
+                                
+                                // Reset the algorithm state
+                                this.mstEdges = [];
+                                this.rejectedEdges = [];
+                                this.currentEdgeIndex = -1;
+                                this.isPaused = false;
+                                
+                                // Start the animation
+                                this.startAnimation();
+                            }
+                            
+                            // Start the animation loop
+                            startAnimation() {
+                                if (this.isAnimating) return;
+                                
+                                this.isAnimating = true;
+                                this.isPaused = false;
+                                
+                                // Update UI controls
+                                this.updateButtonStates();
+                                
+                                // Calculate delay based on speed (inverse relationship)
+                                const baseDelay = 2000; // 2 seconds at slowest speed
+                                const delay = baseDelay / this.animationSpeed;
+                                
+                                // Start animation loop
+                                this.animationStep(delay);
+                            }
+                            
+                            // Perform a single animation step
+                            animationStep(delay) {
+                                if (!this.isAnimating || this.isPaused) return;
+                                
+                                // Clear any existing timer
+                                if (this.animationTimer) {
+                                    clearTimeout(this.animationTimer);
+                                }
+                                
+                                // Perform one step of the algorithm
+                                const canContinue = this.stepKruskal();
+                                
+                                // Schedule next step if algorithm can continue
+                                if (canContinue) {
+                                    this.animationTimer = setTimeout(() => {
+                                        this.animationStep(delay);
+                                    }, delay);
+                                } else {
+                                    // Algorithm is complete
+                                    this.isAnimating = false;
+                                    this.updateButtonStates();
+                                }
+                            }
+                            
+                            // Pause the animation
+                            pauseAnimation() {
+                                if (!this.isAnimating || this.isPaused) return;
+                                
+                                this.isPaused = true;
+                                document.getElementById('statusText').textContent = 'Animation paused';
+                                this.updateButtonStates();
+                            }
+                            
+                            // Resume the animation
+                            resumeAnimation() {
+                                if (!this.isAnimating || !this.isPaused) return;
+                                
+                                this.isPaused = false;
+                                
+                                // Calculate current delay based on speed
+                                const baseDelay = 2000;
+                                const delay = baseDelay / this.animationSpeed;
+                                
+                                // Resume animation
+                                this.updateButtonStates();
+                                this.animationStep(delay);
+                            }
+                            
+                            // Stop the animation completely
+                            stopAnimation() {
+                                // Clear the animation timer
+                                if (this.animationTimer) {
+                                    clearTimeout(this.animationTimer);
+                                    this.animationTimer = null;
+                                }
+                                
+                                this.isAnimating = false;
+                                this.isPaused = false;
+                                this.updateButtonStates();
+                            }
+                            
+                            // Set animation speed
+                            setAnimationSpeed(speed) {
+                                // Speed should be between 1-10
+                                this.animationSpeed = Math.max(1, Math.min(10, speed));
+                                
+                                // If animation is running, adjust the timing
+                                if (this.isAnimating && !this.isPaused) {
+                                    // Stop current animation
+                                    if (this.animationTimer) {
+                                        clearTimeout(this.animationTimer);
+                                    }
+                                    
+                                    // Restart with new speed
+                                    const baseDelay = 2000;
+                                    const delay = baseDelay / this.animationSpeed;
+                                    this.animationStep(delay);
+                                }
+                            }
+                            
+                            // Update button states based on current state
+                            updateButtonStates() {
+                                // Get button elements
+                                const startBtn = document.getElementById('startBtn');
+                                const nextBtn = document.getElementById('nextBtn');
+                                const pauseBtn = document.getElementById('pauseBtn');
+                                const resumeBtn = document.getElementById('resumeBtn');
+                                
+                                // Update button states if elements exist
+                                if (startBtn) startBtn.disabled = this.nodes.length === 0 || this.isAnimating;
+                                if (nextBtn) nextBtn.disabled = this.nodes.length === 0 || this.isAnimating || this.currentEdgeIndex >= this.edges.length - 1;
+                                if (pauseBtn) pauseBtn.disabled = !this.isAnimating || this.isPaused;
+                                if (resumeBtn) resumeBtn.disabled = !this.isAnimating || !this.isPaused;
+                                
+                                // Update stats
+                                const cityCount = document.getElementById('cityCount');
+                                const connectionCount = document.getElementById('connectionCount');
+                                const connectedCount = document.getElementById('connectedCount');
+                                const rejectedCount = document.getElementById('rejectedCount');
+                                
+                                if (cityCount) cityCount.textContent = this.nodes.length;
+                                if (connectionCount) connectionCount.textContent = this.edges.length;
+                                if (connectedCount) connectedCount.textContent = this.mstEdges.length;
+                                if (rejectedCount) rejectedCount.textContent = this.rejectedEdges.length;
+                                
+                                // Update total cost
+                                const totalCost = this.mstEdges.reduce((sum, edge) => sum + edge.weight, 0);
+                                const totalCostElement = document.getElementById('totalCost');
+                                if (totalCostElement) totalCostElement.textContent = `Total Cost: ${totalCost} MW`;
+                            }
+                
+                            // Draw the graph on the canvas
+                            draw() {
+                                const canvas = document.getElementById('graphCanvas');
+                                if (!canvas) return;
+                                
+                                const ctx = canvas.getContext('2d');
+                                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                                
+                                // Draw all edges
+                                for (const edge of this.edges) {
+                                    const from = this.nodes[edge.u];
+                                    const to = this.nodes[edge.v];
+                                    
+                                    if (!from || !to) continue;
+                                    
+                                    ctx.beginPath();
+                                    ctx.moveTo(from.x, from.y);
+                                    ctx.lineTo(to.x, to.y);
+                                    ctx.lineWidth = 2;
+                                    
+                                    // Highlight MST edges
+                                    if (this.mstEdges.includes(edge)) {
+                                        ctx.strokeStyle = '#00ffcc';
+                                        ctx.shadowColor = '#00ffcc';
+                                        ctx.shadowBlur = 8;
+                                    } else if (this.rejectedEdges.includes(edge)) {
+                                        ctx.strokeStyle = '#ff4757';
+                                    } else {
+                                        ctx.strokeStyle = '#ffa502'; // Using warning color for pending edges
+                                    }
+                                    
+                                    ctx.stroke();
+                                    
+                                    // Draw weight
+                                    ctx.fillStyle = '#aaa';
+                                    ctx.font = '12px Arial';
+                                    ctx.textAlign = 'center';
+                                    const midX = (from.x + to.x) / 2;
+                                    const midY = (from.y + to.y) / 2;
+                                    ctx.fillText(edge.weight + " MW", midX, midY);
+                                }
+                                
+                                ctx.shadowBlur = 0;
+                                
+                                // Draw nodes
+                                for (const node of this.nodes) {
+                                    ctx.beginPath();
+                                    ctx.arc(node.x, node.y, 18, 0, 2 * Math.PI);
+                                    
+                                    // Check if node is connected in MST
+                                    const isConnected = this.mstEdges.some(e => e.u === node.id || e.v === node.id);
+                                    ctx.fillStyle = isConnected ? '#00ffcc' : '#57606f';
+                                    ctx.fill();
+                                    
+                                    ctx.strokeStyle = '#fff';
+                                    ctx.lineWidth = 2;
+                                    ctx.stroke();
+                                    
+                                    // Draw city name
+                                    ctx.fillStyle = '#fff';
+                                    ctx.font = '12px Arial';
+                                    ctx.textAlign = 'center';
+                                    ctx.fillText(node.label, node.x, node.y + 35);
+                                }
+                                
+                                // Update edge list
+                                this.updateEdgeList();
+                            }
+                            
+                            // Update the edge list display
+                            updateEdgeList() {
+                                const edgeListContainer = document.getElementById('edgeListContainer');
+                                if (!edgeListContainer) return;
+                                
+                                edgeListContainer.innerHTML = '';
+                                
+                                this.edges.forEach(edge => {
+                                    const fromNode = this.nodes[edge.u];
+                                    const toNode = this.nodes[edge.v];
+                                    
+                                    if (!fromNode || !toNode) return;
+                                    
+                                    const edgeItem = document.createElement('div');
+                                    edgeItem.className = 'edge-item';
+                                    
+                                    if (this.mstEdges.includes(edge)) {
+                                        edgeItem.classList.add('selected');
+                                    } else if (this.rejectedEdges.includes(edge)) {
+                                        edgeItem.classList.add('rejected');
+                                    }
+                                    
+                                    if (edge === this.edges[this.currentEdgeIndex]) {
+                                        edgeItem.classList.add('current');
+                                    }
+                                    
+                                    edgeItem.innerHTML = `
+                                        <span>${fromNode.label} ↔ ${toNode.label}</span>
+                                        <span>${edge.weight} MW</span>
+                                        <span>${this.mstEdges.includes(edge) ? 'Connected' : 
+                                              this.rejectedEdges.includes(edge) ? 'Rejected' : 'Pending'}</span>
+                                    `;
+                                    edgeListContainer.appendChild(edgeItem);
+                                });
+                            }
+                        }
+                        
+                        // Global variables for custom network
+                        let customNodes = [];
+                        let customEdges = [];
+                        let currentMode = 'node';
+                        let isDragging = false;
+                        let draggedNode = null;
+                        let startNode = null;
+                        let nodeIdCounter = 0;
+                        let edgeIdCounter = 0;
+                        
+                        // PowerGrid instance
+                        const powerGrid = new PowerGrid();
+                        
+                        // Canvas click handler for custom network
+                        function handleCanvasClick(e) {
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            if (!inputCanvas) return;
+                            
+                            const rect = inputCanvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                
+                            if (currentMode === 'node') {
+                                // Add new node
+                                const nodeLabelInput = document.getElementById('nodeLabel');
+                                const label = (nodeLabelInput && nodeLabelInput.value) ? 
+                                              nodeLabelInput.value : `City ${nodeIdCounter + 1}`;
+                                              
+                                addNode(x, y, label);
+                                if (nodeLabelInput) nodeLabelInput.value = '';
+                            } else if (currentMode === 'edge' && startNode) {
+                                // Find clicked node
+                                const endNode = customNodes.find(node => 
+                                    Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) < 20
+                                );
+                                
+                                if (endNode && endNode !== startNode) {
+                                    // Add edge between nodes
+                                    const weight = Math.round(
+                                        Math.sqrt((startNode.x - endNode.x) ** 2 + 
+                                                 (startNode.y - endNode.y) ** 2) / 10
+                                    );
+                                    addEdge(startNode.id, endNode.id, weight);
+                                }
+                                startNode = null;
+                            } else if (currentMode === 'edge') {
+                                // Find clicked node to start edge
+                                startNode = customNodes.find(node => 
+                                    Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) < 20
+                                );
+                            } else if (currentMode === 'delete') {
+                                // Delete node or edge
+                                const clickedNode = customNodes.find(node => 
+                                    Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) < 20
+                                );
+                                
+                                if (clickedNode) {
+                                    deleteNode(clickedNode.id);
+                                } else {
+                                    // Check if clicked on an edge
+                                    for (let i = 0; i < customEdges.length; i++) {
+                                        const edge = customEdges[i];
+                                        const from = customNodes.find(n => n.id === edge.u);
+                                        const to = customNodes.find(n => n.id === edge.v);
+                                        
+                                        if (from && to && isPointOnLine(x, y, from.x, from.y, to.x, to.y)) {
+                                            deleteEdge(edge.id);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                
+                            drawCustomNetwork();
+                            updateNodeSelects();
+                            renderNodeList();
+                            renderEdgeList();
+                        }
+                        
+                        // Mouse down handler for dragging
+                        function handleMouseDown(e) {
+                            if (currentMode !== 'move') return;
+                            
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            if (!inputCanvas) return;
+                            
+                            const rect = inputCanvas.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                
+                            draggedNode = customNodes.find(node => 
+                                Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) < 20
+                            );
+                            
+                            if (draggedNode) {
+                                isDragging = true;
+                                drawCustomNetwork();
+                            }
+                        }
+                        
+                        // Mouse move handler for dragging
+                        function handleMouseMove(e) {
+                            if (!isDragging || !draggedNode) return;
+                            
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            if (!inputCanvas) return;
+                            
+                            const rect = inputCanvas.getBoundingClientRect();
+                            draggedNode.x = e.clientX - rect.left;
+                            draggedNode.y = e.clientY - rect.top;
+                            
+                            drawCustomNetwork();
+                        }
+                        
+                        // Mouse up handler for dragging
+                        function handleMouseUp() {
+                            isDragging = false;
+                            draggedNode = null;
+                        }
+                        
+                        // Add node to custom network
+                        function addNode(x, y, label) {
+                            const newNode = {
+                                id: nodeIdCounter++,
+                                x,
+                                y,
+                                label
+                            };
+                            customNodes.push(newNode);
+                            return newNode;
+                        }
+                        
+                        // Add edge to custom network
+                        function addEdge(u, v, weight) {
+                            const newEdge = {
+                                id: edgeIdCounter++,
+                                u,
+                                v,
+                                weight
+                            };
+                            customEdges.push(newEdge);
+                            return newEdge;
+                        }
+                        
+                        // Delete node from custom network
+                        function deleteNode(nodeId) {
+                            customNodes = customNodes.filter(node => node.id !== nodeId);
+                            customEdges = customEdges.filter(edge => edge.u !== nodeId && edge.v !== nodeId);
+                        }
+                        
+                        // Delete edge from custom network
+                        function deleteEdge(edgeId) {
+                            customEdges = customEdges.filter(edge => edge.id !== edgeId);
+                        }
+                        
+                        // Check if point is on line
+                        function isPointOnLine(px, py, x1, y1, x2, y2) {
+                            const lineLength = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                            const d1 = Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+                            const d2 = Math.sqrt((px - x2) ** 2 + (py - y2) ** 2);
+                            
+                            // Check if point is within the line segment with some buffer
+                            const buffer = 5;
+                            return Math.abs(d1 + d2 - lineLength) < buffer;
+                        }
+                        
+                        // Draw custom network
+                        function drawCustomNetwork() {
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            if (!inputCanvas) {
+                                console.error("Input canvas not found");
+                                return;
+                            }
+                            
+                            // Make sure canvas has dimensions
+                            if (inputCanvas.width === 0 || inputCanvas.height === 0) {
+                                inputCanvas.width = inputCanvas.offsetWidth || 800;
+                                inputCanvas.height = inputCanvas.offsetHeight || 400;
+                                console.log("Set canvas dimensions:", inputCanvas.width, "x", inputCanvas.height);
+                            }
+                            
+                            const inputCtx = inputCanvas.getContext('2d');
+                            
+                            // Clear canvas with a background color to make it visible
+                            inputCtx.fillStyle = '#1e1e1e'; // Secondary dark color
+                            inputCtx.fillRect(0, 0, inputCanvas.width, inputCanvas.height);
+                            
+                            // Draw grid lines (for better visibility)
+                            inputCtx.strokeStyle = '#2f3542'; // Dark gray
+                            inputCtx.lineWidth = 0.5;
+                            
+                            // Draw vertical grid lines
+                            for (let x = 0; x < inputCanvas.width; x += 50) {
+                                inputCtx.beginPath();
+                                inputCtx.moveTo(x, 0);
+                                inputCtx.lineTo(x, inputCanvas.height);
+                                inputCtx.stroke();
+                            }
+                            
+                            // Draw horizontal grid lines
+                            for (let y = 0; y < inputCanvas.height; y += 50) {
+                                inputCtx.beginPath();
+                                inputCtx.moveTo(0, y);
+                                inputCtx.lineTo(inputCanvas.width, y);
+                                inputCtx.stroke();
+                            }
+                            
+                            // Draw edges
+                            customEdges.forEach(edge => {
+                                const from = customNodes.find(n => n.id === edge.u);
+                                const to = customNodes.find(n => n.id === edge.v);
+                                
+                                if (!from || !to) return;
+                                
+                                inputCtx.beginPath();
+                                inputCtx.moveTo(from.x, from.y);
+                                inputCtx.lineTo(to.x, to.y);
+                                inputCtx.strokeStyle = '#57606f';
+                                inputCtx.lineWidth = 2;
+                                inputCtx.stroke();
+                                
+                                // Draw weight
+                                inputCtx.fillStyle = '#aaa';
+                                inputCtx.font = '12px Arial';
+                                inputCtx.textAlign = 'center';
+                                inputCtx.fillText(
+                                    edge.weight + " MW", 
+                                    (from.x + to.x) / 2, 
+                                    (from.y + to.y) / 2
+                                );
+                            });
+                            
+                            // Draw nodes
+                            customNodes.forEach(node => {
+                                inputCtx.beginPath();
+                                inputCtx.arc(node.x, node.y, 18, 0, 2 * Math.PI);
+                                inputCtx.fillStyle = '#57606f';
+                                inputCtx.fill();
+                                inputCtx.strokeStyle = '#fff';
+                                inputCtx.lineWidth = 2;
+                                inputCtx.stroke();
+                                
+                                // Draw label
+                                inputCtx.fillStyle = '#fff';
+                                inputCtx.font = '12px Arial';
+                                inputCtx.textAlign = 'center';
+                                inputCtx.fillText(node.label, node.x, node.y + 35);
+                            });
+                            
+                            // Highlight start node for edge creation
+                            if (startNode) {
+                                inputCtx.beginPath();
+                                inputCtx.arc(startNode.x, startNode.y, 22, 0, 2 * Math.PI);
+                                inputCtx.strokeStyle = '#00ffcc';
+                                inputCtx.lineWidth = 3;
+                                inputCtx.stroke();
+                            }
+                            
+                            // Add helper text if no nodes exist
+                            if (customNodes.length === 0) {
+                                inputCtx.fillStyle = '#fff';
+                                inputCtx.font = '16px Arial';
+                                inputCtx.textAlign = 'center';
+                                inputCtx.fillText(
+                                    "Click anywhere on the canvas to add a city",
+                                    inputCanvas.width / 2,
+                                    inputCanvas.height / 2
+                                );
+                            }
+                        }
+                        
+                        // Update node selects for custom network
+                        function updateNodeSelects() {
+                            const edgeSourceSelect = document.getElementById('edgeSource');
+                            const edgeTargetSelect = document.getElementById('edgeTarget');
+                            
+                            if (!edgeSourceSelect || !edgeTargetSelect) return;
+                            
+                            edgeSourceSelect.innerHTML = '<option value="">Select City</option>';
+                            edgeTargetSelect.innerHTML = '<option value="">Select City</option>';
+                            
+                            customNodes.forEach(node => {
+                                const option = document.createElement('option');
+                                option.value = node.id;
+                                option.textContent = node.label;
+                                edgeSourceSelect.appendChild(option.cloneNode(true));
+                                edgeTargetSelect.appendChild(option);
+                            });
+                        }
+                        
+                        // Render node list for custom network
+                        function renderNodeList() {
+                            const nodeListContainer = document.getElementById('nodeListContainer');
+                            if (!nodeListContainer) return;
+                            
+                            nodeListContainer.innerHTML = '';
+                            
+                            customNodes.forEach(node => {
+                                const nodeItem = document.createElement('div');
+                                nodeItem.className = 'node-item';
+                                nodeItem.innerHTML = `
+                                    <span>${node.label}</span>
+                                    <button class="delete-node" data-id="${node.id}">Delete</button>
+                                `;
+                                nodeListContainer.appendChild(nodeItem);
+                            });
+                            
+                            // Add event listeners to delete buttons
+                            document.querySelectorAll('.delete-node').forEach(btn => {
+                                btn.addEventListener('click', (e) => {
+                                    const nodeId = parseInt(e.target.dataset.id);
+                                    deleteNode(nodeId);
+                                    drawCustomNetwork();
+                                    updateNodeSelects();
+                                    renderNodeList();
+                                    renderEdgeList();
+                                });
+                            });
+                        }
+                        
+                        // Render edge list for custom network
+                        function renderEdgeList() {
+                            const edgeInputListContainer = document.getElementById('edgeInputListContainer');
+                            if (!edgeInputListContainer) return;
+                            
+                            edgeInputListContainer.innerHTML = '';
+                            
+                            customEdges.forEach(edge => {
+                                const fromNode = customNodes.find(n => n.id === edge.u);
+                                const toNode = customNodes.find(n => n.id === edge.v);
+                                
+                                if (!fromNode || !toNode) return;
+                                
+                                const edgeItem = document.createElement('div');
+                                edgeItem.className = 'edge-input-item';
+                                edgeItem.innerHTML = `
+                                    <span>${fromNode.label} ↔ ${toNode.label} (${edge.weight} MW)</span>
+                                    <button class="delete-edge" data-id="${edge.id}">Delete</button>
+                                `;
+                                edgeInputListContainer.appendChild(edgeItem);
+                            });
+                            
+                            // Add event listeners to delete buttons
+                            document.querySelectorAll('.delete-edge').forEach(btn => {
+                                btn.addEventListener('click', (e) => {
+                                    const edgeId = parseInt(e.target.dataset.id);
+                                    deleteEdge(edgeId);
+                                    drawCustomNetwork();
+                                    renderEdgeList();
+                                });
+                            });
+                        }
+                        
+                        // Add node from form
+                        function addNodeFromForm() {
+                            const nodeLabelInput = document.getElementById('nodeLabel');
+                            if (!nodeLabelInput) return;
+                            
+                            const label = nodeLabelInput.value.trim();
+                            if (!label) {
+                                alert('Please enter a city name');
+                                return;
+                            }
+                            
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            if (!inputCanvas) return;
+                            
+                            // Add node at random position on canvas
+                            const x = 100 + Math.random() * (inputCanvas.width - 200);
+                            const y = 100 + Math.random() * (inputCanvas.height - 200);
+                            addNode(x, y, label);
+                            
+                            nodeLabelInput.value = '';
+                            drawCustomNetwork();
+                            updateNodeSelects();
+                            renderNodeList();
+                        }
+                        
+                        // Add edge from form
+                        function addEdgeFromForm() {
+                            const edgeSourceSelect = document.getElementById('edgeSource');
+                            const edgeTargetSelect = document.getElementById('edgeTarget');
+                            const edgeWeightInput = document.getElementById('edgeWeight');
+                            
+                            if (!edgeSourceSelect || !edgeTargetSelect || !edgeWeightInput) return;
+                            
+                            const sourceId = parseInt(edgeSourceSelect.value);
+                            const targetId = parseInt(edgeTargetSelect.value);
+                            const weight = parseInt(edgeWeightInput.value);
+                            
+                            if (isNaN(sourceId) || isNaN(targetId)) {
+                                alert('Please select both source and target cities');
+                                return;
+                            }
+                            
+                            if (sourceId === targetId) {
+                                alert('Source and target cities must be different');
+                                return;
+                            }
+                            
+                            if (isNaN(weight) || weight < 1) {
+                                alert('Please enter a valid power requirement (minimum 1 MW)');
+                                return;
+                            }
+                            
+                            // Check if edge already exists
+                            const edgeExists = customEdges.some(edge => 
+                                (edge.u === sourceId && edge.v === targetId) || 
+                                (edge.u === targetId && edge.v === sourceId)
+                            );
+                            
+                            if (edgeExists) {
+                                alert('A connection between these cities already exists');
+                                return;
+                            }
+                            
+                            addEdge(sourceId, targetId, weight);
+                            
+                            edgeSourceSelect.value = '';
+                            edgeTargetSelect.value = '';
+                            edgeWeightInput.value = '5';
+                            
+                            drawCustomNetwork();
+                            renderEdgeList();
+                        }
+                        
+                        // Clear network
+                        function clearNetwork() {
+                            if (confirm('Are you sure you want to clear the entire network?')) {
+                                customNodes = [];
+                                customEdges = [];
+                                nodeIdCounter = 0;
+                                edgeIdCounter = 0;
+                                drawCustomNetwork();
+                                updateNodeSelects();
+                                renderNodeList();
+                                renderEdgeList();
+                            }
+                        }
+                        
+                        // Use custom network
+                        function useCustomNetwork() {
+                            if (customNodes.length === 0) {
+                                alert('Please add at least one city');
+                                return;
+                            }
+                        
+                            if (customNodes.length > 1 && customEdges.length === 0) {
+                                alert('Please add at least one power connection between cities');
+                                return;
+                            }
+                        
+                           
+                            powerGrid.clear();
+                        
+                          
+                            const simulationTab = document.querySelector('[data-tab="simulation"]');
+                            if (simulationTab) {
+                                simulationTab.click();
+                            }
+                        
+                         
+                            powerGrid.nodes = customNodes.map(node => ({
+                                id: node.id,
+                                x: node.x,
+                                y: node.y,
+                                label: node.label
+                            }));
+                        
+                            powerGrid.edges = customEdges.map(edge => ({
+                                u: edge.u,
+                                v: edge.v,
+                                weight: edge.weight
+                            }));
+                        
+                            powerGrid.edges.sort((a, b) => a.weight - b.weight);
+                            powerGrid.mstEdges = [];
+                            powerGrid.rejectedEdges = [];
+                            powerGrid.currentEdgeIndex = -1;
+                        
+                            // ✅ Step 4: Force canvas render after tab switch
+                            setTimeout(() => {
+                                setupCanvases();  // In case canvas size is not initialized
+                                powerGrid.draw(); // Ensure it's drawn
+                            }, 300);
+                        
+                            const statusText = document.getElementById('statusText');
+                            if (statusText) statusText.textContent = 'Ready to start algorithm';
+                        
+                            powerGrid.updateButtonStates();
+                        }
+                        
+                            
+                            // Switch to simulation tab
+                            const simulationTab = document.querySelector('[data-tab="simulation"]');
+                            if (simulationTab) {
+                                simulationTab.click(); // Trigger the click event to switch tabs
+                            } else {
+                                // Manual tab switching as fallback
+                                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                                
+                                const simTab = document.querySelector('[data-tab="simulation"]');
+                                const simContent = document.getElementById('simulation-tab');
+                                
+                                if (simTab) simTab.classList.add('active');
+                                if (simContent) simContent.classList.add('active');
+                            }
+                            
+                            // Load custom network into simulation
+                            powerGrid.nodes = customNodes.map(node => ({
+                                id: node.id,
+                                x: node.x,
+                                y: node.y,
+                                label: node.label
+                            }));
+                            
+                            powerGrid.edges = customEdges.map(edge => ({
+                                u: edge.u,
+                                v: edge.v,
+                                weight: edge.weight
+                            }));
+                            
+                            powerGrid.edges.sort((a, b) => a.weight - b.weight);
+                            powerGrid.mstEdges = [];
+                            powerGrid.rejectedEdges = [];
+                            powerGrid.currentEdgeIndex = -1;
+                            
+                            powerGrid.draw();
+                            
+                            const statusText = document.getElementById('statusText');
+                            if (statusText) statusText.textContent = 'Ready to start algorithm';
+                            
+                            powerGrid.updateButtonStates();
+                        
+                        
+                        // Setup canvas sizes
+                        function setupCanvases() {
+                            const graphCanvas = document.getElementById('graphCanvas');
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            
+                            if (graphCanvas) {
+                                graphCanvas.width = graphCanvas.offsetWidth || 800;
+                                graphCanvas.height = graphCanvas.offsetHeight || 400;
+                                powerGrid.draw();
+                                console.log("Graph canvas sized:", graphCanvas.width, "x", graphCanvas.height);
+                            }
+                            
+                            if (inputCanvas) {
+                                inputCanvas.width = inputCanvas.offsetWidth || 800;
+                                inputCanvas.height = inputCanvas.offsetHeight || 400;
+                                drawCustomNetwork();
+                                console.log("Input canvas sized:", inputCanvas.width, "x", inputCanvas.height);
+                            }
+                        }
+                        
+                        // Initialize the application
+                        function initApp() {
+                            // Setup canvas sizes
+                            setupCanvases();
+                            window.addEventListener('resize', setupCanvases);
+                            
+                            // Add event listeners for main controls
+                            const generateBtn = document.getElementById('generateBtn');
+                            const startBtn = document.getElementById('startBtn');
+                            const nextBtn = document.getElementById('nextBtn');
+                            const resetBtn = document.getElementById('resetBtn');
+                            const pauseBtn = document.getElementById('pauseBtn');
+                            const resumeBtn = document.getElementById('resumeBtn');
+                            const speedSlider = document.getElementById('speedSlider');
+                            
+                            if (generateBtn) generateBtn.addEventListener('click', () => powerGrid.generateRandom());
+                            if (startBtn) startBtn.addEventListener('click', () => powerGrid.runKruskal());
+                            if (nextBtn) nextBtn.addEventListener('click', () => powerGrid.stepKruskal());
+                            if (resetBtn) resetBtn.addEventListener('click', () => {
+                                powerGrid.clear();
+                                const statusText = document.getElementById('statusText');
+                                if (statusText) statusText.textContent = 'Generate cities to begin';
+                            });
+                            if (pauseBtn) pauseBtn.addEventListener('click', () => powerGrid.pauseAnimation());
+                            if (resumeBtn) resumeBtn.addEventListener('click', () => powerGrid.resumeAnimation());
+                            if (speedSlider) speedSlider.addEventListener('input', (e) => {
+                                const speed = parseInt(e.target.value);
+                                powerGrid.setAnimationSpeed(speed);
+                            });
+                            
+                            // Add event listeners for tab switching
+                            document.querySelectorAll('.tab').forEach(tab => {
+                                tab.addEventListener('click', () => {
+                                    // Update active tab
+                                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                                    
+                                    tab.classList.add('active');
+                                    const tabContentId = `${tab.dataset.tab}-tab`;
+                                    const tabContent = document.getElementById(tabContentId);
+                                    if (tabContent) tabContent.classList.add('active');
+                                    
+                                    // Stop any animations when switching tabs
+                                    powerGrid.stopAnimation();
+                                });
+                            });
+                            
+                            // Add event listeners for custom network controls
+                            const addNodeBtn = document.getElementById('addNodeBtn');
+                            const addEdgeBtn = document.getElementById('addEdgeBtn');
+                            const clearCustomBtn = document.getElementById('clearCustomBtn');
+                            const useCustomGraphBtn = document.getElementById('useCustomGraphBtn');
+                            const inputCanvas = document.getElementById('inputCanvas');
+                            
+                            if (addNodeBtn) addNodeBtn.addEventListener('click', addNodeFromForm);
+                            if (addEdgeBtn) addEdgeBtn.addEventListener('click', addEdgeFromForm);
+                            if (clearCustomBtn) clearCustomBtn.addEventListener('click', clearNetwork);
+                            if (useCustomGraphBtn) useCustomGraphBtn.addEventListener('click', useCustomNetwork);
+                            
+                            // Add canvas event listeners
+                            if (inputCanvas) {
+                                inputCanvas.addEventListener('click', handleCanvasClick);
+                                inputCanvas.addEventListener('mousedown', handleMouseDown);
+                                inputCanvas.addEventListener('mousemove', handleMouseMove);
+                                inputCanvas.addEventListener('mouseup', handleMouseUp);
+                                inputCanvas.addEventListener('mouseleave', handleMouseUp);
+                            }
+                            
+                            // Add event listeners for input modes
+                            document.querySelectorAll('.input-mode').forEach(mode => {
+                                mode.addEventListener('click', () => {
+                                    document.querySelectorAll('.input-mode').forEach(m => m.classList.remove('active'));
+                                    mode.classList.add('active');
+                                    currentMode = mode.dataset.mode;
+                                    startNode = null;
+                                    
+                                    // Update status text
+                                    const inputStatusText = document.getElementById('inputStatusText');
+                                    if (inputStatusText) {
+                                        let statusText = '';
+                                        switch (currentMode) {
+                                            case 'node': statusText = 'Click on canvas to add cities'; break;
+                                            case 'edge': statusText = 'First click a city, then click another to create a connection'; break;
+                                            case 'move': statusText = 'Click and drag cities to move them'; break;
+                                            case 'delete': statusText = 'Click on cities or connections to delete them'; break;
+                                        }
+                                        inputStatusText.textContent = statusText;
+                                    }
+                                });
+                            });
+                            
+                            // Initialize custom network
+                            updateNodeSelects();
+                            renderNodeList();
+                            renderEdgeList();
+                            
+                            // Explicitly draw the custom network canvas (even if empty)
+                            drawCustomNetwork();
+                            
+                            // Initialize PowerGrid
+                            powerGrid.clear();
+                            
+                            // Log for debugging
+                            console.log("Application initialized");
+                            console.log("Graph Canvas:", document.getElementById('graphCanvas'));
+                            console.log("Input Canvas:", document.getElementById('inputCanvas'));
+                        }
+                        
+                        // Make sure the canvas drawing happens immediately (fix rendering issues)
+                        function forceCanvasRender() {
+                            setupCanvases();
+                            powerGrid.draw();
+                            drawCustomNetwork();
+                        }
+                        
+                        // Run the initialization when the DOM is loaded
+                        document.addEventListener('DOMContentLoaded', () => {
+                            initApp();
+                            // Force a redraw after a short delay to ensure canvas is visible
+                            setTimeout(forceCanvasRender, 100);
+                        });
+                        
+                        // Redraw on tab switch to ensure custom canvas appears
+                        document.querySelectorAll('.tab').forEach(tab => {
+                            tab.addEventListener('click', () => {
+                                setTimeout(forceCanvasRender, 100);
+                            });
+                        });
+                    </script>
